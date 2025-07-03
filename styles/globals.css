@@ -1,1 +1,41 @@
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ✅ Font-face utility classes (must match your tailwind.config.js) */
+.font-roboto {
+  font-family: 'Roboto', sans-serif;
+}
+
+.font-dancing {
+  font-family: 'Dancing Script', cursive;
+}
+
+.font-vibes {
+  font-family: 'Great Vibes', cursive;
+}
+
+.font-satisfy {
+  font-family: 'Satisfy', cursive;
+}
+
+.font-pacifico {
+  font-family: 'Pacifico', cursive;
+}
+
+.font-lobster {
+  font-family: 'Lobster', cursive;
+}
+
+.font-sacramento {
+  font-family: 'Sacramento', cursive;
+}
+
+.font-shadows {
+  font-family: 'Shadows Into Light', cursive;
+}
+
+.font-calligraffitti {
+  font-family: 'Calligraffitti', cursive;
+}
