@@ -1,4 +1,3 @@
-
 // app/api/chat/route.ts
 
 import { NextRequest } from 'next/server';
@@ -37,7 +36,6 @@ const bots = [
   }
 ];
 
-// 🧠 Expanded semantic context clustering (manual keyword boosters)
 const extraTriggers: Record<string, string[]> = {
   Cyber: ['firewall', 'injection', 'anomaly', 'protocol', 'darknet', 'exploit', 'zero-day'],
   DeepSea: ['hydrothermal', 'sonobuoy', 'pressure', 'abyss', 'kraken', 'depth', 'echo-location'],
@@ -45,7 +43,6 @@ const extraTriggers: Record<string, string[]> = {
   Stock: ['bond', 'derivatives', 'hedge', 'arbitrage', 'forex', 'bubble', 'liquidity']
 };
 
-// ✅ Detect bots by prompt using extended manual+keyword match logic
 function detectBots(prompt: string): typeof bots {
   const promptLower = prompt.toLowerCase();
 
@@ -54,35 +51,33 @@ function detectBots(prompt: string): typeof bots {
     return keywords.some(k => promptLower.includes(k));
   });
 
-  // Add variety fallback if too narrow
   if (matchedBots.length === 0) {
     const shuffled = [...bots].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 2); // return any 2 random bots
+    return shuffled.slice(0, 2);
   }
 
   return matchedBots;
 }
 
-// 🧠 Build GPT message for each bot
 function buildMessages(bot: any, prompt: string) {
   return [
     {
       role: 'system',
-      content: `${bot.personality} First, generate 3-4 internal diagnostic thoughts based on the prompt. Then produce a final analytical response as if reporting to command.`
+      content: `${bot.personality} First, generate 3–4 diagnostic thoughts based on the prompt. Then give a final analytical response.`
     },
     {
       role: 'user',
-      content: `Prompt: "${prompt}". Structure output like this:\n\n1. [First Thought]\n2. [Second Thought]\n3. [Third Thought]\n\nResponse: [Your analysis goes here]`
+      content: `Prompt: "${prompt}"\n\nStructure:\n\n1. [Thought 1]\n2. [Thought 2]\n3. [Thought 3]\nResponse: [Your conclusion or insight]`
     }
   ];
 }
 
-// 🔁 GPT response fetch per bot
 async function queryGPT(bot: any, prompt: string) {
   const body = {
     model: 'gpt-4',
     messages: buildMessages(bot, prompt),
-    temperature: 0.9
+    temperature: 0.9,
+    max_tokens: 250,
   };
 
   const res = await fetch(OPENAI_API_URL, {
@@ -95,17 +90,17 @@ async function queryGPT(bot: any, prompt: string) {
   });
 
   const data = await res.json();
-  const raw = data?.choices?.[0]?.message?.content ?? '';
+  const raw = data?.choices?.[0]?.message?.content || '';
 
   const thoughts: string[] = [];
-  let response = '(no response)';
+  let response = '';
 
   for (const line of raw.split('\n')) {
     const clean = line.trim();
     if (/^\d+\.\s/.test(clean)) {
-      thoughts.push(clean.replace(/^\d+\.\s*/, ''));
+      thoughts.push(clean.replace(/^\d+\.\s*/, '').trim());
     } else if (clean.toLowerCase().startsWith('response:')) {
-      response = clean.replace(/^response:\s*/i, '');
+      response = clean.replace(/^response:\s*/i, '').trim();
     }
   }
 
@@ -113,11 +108,10 @@ async function queryGPT(bot: any, prompt: string) {
     emoji: bot.emoji,
     name: bot.name,
     thoughts: thoughts.slice(0, 4),
-    response: response.trim()
+    response: response || '⚠️ GPT did not return a proper response. Check the input or retry.'
   };
 }
 
-// ✅ Final POST handler
 export async function POST(req: NextRequest) {
   const { input } = await req.json();
   const prompt = input.trim();
