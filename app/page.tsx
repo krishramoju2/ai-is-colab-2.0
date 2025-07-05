@@ -1,3 +1,5 @@
+// app/page.tsx or app/home/page.tsx — Updated HomePage
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -67,6 +69,19 @@ export default function HomePage() {
         🧠 Multi-Career GPT Terminal
       </h1>
 
+      <div className="text-sm text-gray-300 text-center italic">
+        <p>🔠 Current Available Fonts: Roboto, Dancing Script, Great Vibes, Satisfy, Pacifico, Lobster, Sacramento, Shadows Into Light, Calligraffitti</p>
+        <p>🧪 Test Prompts:</p>
+        <ul className="list-disc list-inside text-left max-w-2xl mx-auto mt-2">
+          <li>"A robot declares independence from human authority" → 🛡️ Cyber Bot & 📈 Stock Bot</li>
+          <li>"Stock trends match dolphin migration patterns" → 📈 Stock Bot & 🌊 DeepSea Bot</li>
+          <li>"An asteroid changes course ignoring gravity calculations" → 🚀 Space Bot & 🛡️ Cyber Bot</li>
+          <li>"Coral reefs glow with market ticker patterns" → 🌊 DeepSea Bot & 📈 Stock Bot</li>
+          <li>"Undersea cable reroutes data to lunar orbit" → 🌊 DeepSea Bot & 🚀 Space Bot</li>
+          <li>"Investor panic triggered by solar flare tweets" → 📈 Stock Bot & 🚀 Space Bot</li>
+        </ul>
+      </div>
+
       <Examples />
       <Example2 />
 
@@ -122,3 +137,4 @@ export default function HomePage() {
     </main>
   );
 }
+
