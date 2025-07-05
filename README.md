@@ -19,4 +19,4 @@ test prompts :-
 
 "Investor panic triggered by solar flare tweets"
 → 📈 Stock Bot & 🚀 Space Bot
-roboto,dancing script..
+roboto,dancing script.. current caligraphy fonts 
