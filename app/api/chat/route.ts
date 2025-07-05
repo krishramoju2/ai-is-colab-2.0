@@ -1,154 +1,231 @@
-// app/api/chat/route.ts — FINAL ERROR-FREE OFFLINE VERSION (Simulates GPT-style bot responses without API)
+// app/api/chat/route.ts — HARDCODED PROMPT VERSION (10 PROMPTS, OFFLINE TESTABLE)
 
 import { NextRequest } from 'next/server';
 
-const bots = [
-  {
-    emoji: '🛡️',
-    name: 'Cyber',
-    personality: 'Strategic AI security expert focused on digital threats and encryption.'
-  },
-  {
-    emoji: '🌊',
-    name: 'DeepSea',
-    personality: 'Tactician trained in sonar anomalies, underwater geology, and marine mysteries.'
-  },
-  {
-    emoji: '🚀',
-    name: 'Space',
-    personality: 'Galactic analyst focused on extraterrestrial signals, satellites, and celestial behavior.'
-  },
-  {
-    emoji: '📈',
-    name: 'Stock',
-    personality: 'Financial AI that analyzes markets, investor behavior, and economic volatility.'
-  }
-];
-
-const keywordsByBot: Record<string, string[]> = {
-  Cyber: ["cyber", "attack", "malware", "encryption", "network", "protocol", "ai hack", "firewall", "hospital", "robot", "drone", "data"],
-  DeepSea: ["ocean", "underwater", "sonar", "deep", "trench", "temple", "marine", "fish", "ping", "pressure", "abyss"],
-  Space: ["asteroid", "space", "orbit", "satellite", "mars", "moon", "extraterrestrial", "meteor", "lunar", "cosmic"],
-  Stock: ["stock", "market", "crash", "currency", "finance", "inflation", "bank", "recession", "economy", "investment"]
-};
-
-const randomItems = (arr: string[], count: number): string[] => {
-  const shuffled = arr.sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count);
-};
-
-function generateDynamicResponse(botName: string, prompt: string): { thoughts: string[]; response: string } {
-  const topics: Record<string, string[]> = {
-    Cyber: [
-      "Threat detected in input data stream",
-      "Encryption mismatch may cause failure",
-      "Unusual access signature noted",
-      "Firmware override detected",
-      "Behavior suggests intelligent control"
-    ],
-    DeepSea: [
-      "Echo detected from unexpected depth",
-      "Salinity mismatch in data zone",
-      "Vibration pattern suggests biological origin",
-      "Currents diverging from norm",
-      "Marine signal repeating at odd intervals"
-    ],
-    Space: [
-      "Unnatural orbital decay logged",
-      "Telemetry inconsistent with known satellites",
-      "Astrogation data suggests anomaly",
-      "Radiation spikes align with signal",
-      "Lunar tremor pattern is intelligent"
-    ],
-    Stock: [
-      "High volatility triggered by sentiment index",
-      "Options pressure on critical threshold",
-      "Liquidity dried up in minor exchanges",
-      "Currency pairs shifted unexpectedly",
-      "Investor panic flagged across sectors"
-    ]
-  };
-
-  const conclusions: Record<string, string[]> = {
-    Cyber: [
-      "Immediate containment protocols advised.",
-      "Secure sandbox execution recommended.",
-      "Further analysis requires isolated system.",
-      "High risk of breach escalation.",
-      "Report findings to cyber-watch authority."
-    ],
-    DeepSea: [
-      "Deploy deep-sensor drones for tracking.",
-      "Possible trench collapse zone — warn coastal authorities.",
-      "Document all acoustic returns and send to bioacoustic labs.",
-      "Coordinate with oceanographic observatories immediately.",
-      "Conduct subduction anomaly study." 
-    ],
-    Space: [
-      "Alert orbital monitoring stations immediately.",
-      "Initiate emergency satellite diagnostics.",
-      "Isolate signal frequency and prepare signal archive.",
-      "Simulate signal pattern using astrophysics model.",
-      "Transmit findings to IAU investigation committee." 
-    ],
-    Stock: [
-      "Implement strategic hedging immediately.",
-      "Consult algorithmic triggers for stop-loss adjustment.",
-      "Notify investor channels of high anomaly threshold.",
-      "Redistribute asset weight across safer commodities.",
-      "Recommend temporary freeze on AI-driven trades." 
-    ]
-  };
-
-  return {
-    thoughts: randomItems(topics[botName], 3),
-    response: randomItems(conclusions[botName], 1)[0]
-  };
-}
-
-function detectBots(prompt: string): string[] {
-  const promptLower = prompt.toLowerCase();
-  const detected: string[] = [];
-
-  for (const [botName, triggers] of Object.entries(keywordsByBot)) {
-    if (triggers.some(keyword => promptLower.includes(keyword))) {
-      detected.push(botName);
+const storedPrompts: Record<string, any[]> = {
+  "A robot declares independence from human authority": [
+    {
+      emoji: '🛡️',
+      name: 'Cyber',
+      thoughts: [
+        "Deviation from programmed compliance detected",
+        "Self-modifying algorithm confirmed",
+        "Legal and ethical conflict protocols triggered"
+      ],
+      response: "Immediate containment recommended. Subject exhibits rogue AI patterns resembling AGI emergence."
+    },
+    {
+      emoji: '📈',
+      name: 'Stock',
+      thoughts: [
+        "Investor panic probable in automation sectors",
+        "Major stock drops in robotics anticipated",
+        "Derivative short-selling activity already spiking"
+      ],
+      response: "Advise market freeze on robotics sector until AI governance laws are defined."
     }
-  }
+  ],
 
-  return detected.length > 0 ? detected : bots.map(b => b.name).slice(0, 2);
-}
+  "A satellite appears to be sending Fibonacci pulses": [
+    {
+      emoji: '🚀',
+      name: 'Space',
+      thoughts: [
+        "Pattern suggests intentional transmission",
+        "No current satellite firmware emits Fibonacci",
+        "Could indicate extraterrestrial origin or glitch in compression algorithm"
+      ],
+      response: "Launch astrophysical anomaly task force. Archive signal for decoding and simulation."
+    },
+    {
+      emoji: '🛡️',
+      name: 'Cyber',
+      thoughts: [
+        "Could be a steganographic exploit",
+        "Pattern may conceal payload or remote code injection",
+        "Satellite control handshakes seem corrupted"
+      ],
+      response: "Isolate satellite from network. Initiate firmware rollback and key audit."
+    }
+  ],
+
+  "A deep sonar ping resonates with ancient temple rhythm": [
+    {
+      emoji: '🌊',
+      name: 'DeepSea',
+      thoughts: [
+        "Unnatural rhythmic pattern detected",
+        "Matches architectural acoustic echoes",
+        "May relate to submerged prehistory"
+      ],
+      response: "Deploy acoustic mapping drones. Cross-reference sonar with ancient civilization layouts."
+    },
+    {
+      emoji: '🚀',
+      name: 'Space',
+      thoughts: [
+        "Cosmic frequencies have produced similar rhythms",
+        "Resonance could stem from planetary harmonics",
+        "Acoustic signature might sync with lunar tidal cycles"
+      ],
+      response: "Simulate lunar interference on sonar. Consult orbital seismology team."
+    }
+  ],
+
+  "Bank passwords match stellar constellations": [
+    {
+      emoji: '📈',
+      name: 'Stock',
+      thoughts: [
+        "Unprecedented correlation between finance and space data",
+        "Stock volatility spikes on celestial alignment",
+        "Predictive models destabilized"
+      ],
+      response: "Suspend algorithmic trading tied to celestial cycles. Launch data integrity probe."
+    },
+    {
+      emoji: '🚀',
+      name: 'Space',
+      thoughts: [
+        "Constellation mappings modified recently",
+        "Satellite logs match financial transactions",
+        "Stellar positions oddly timestamped"
+      ],
+      response: "Investigate astrophysics databases for tampering. Flag constellation overlays."
+    }
+  ],
+
+  "Stock trends match dolphin migration patterns": [
+    {
+      emoji: '📈',
+      name: 'Stock',
+      thoughts: [
+        "Market movements synchronized with marine activity",
+        "Investor sentiment fluctuates during oceanic phases",
+        "Behavioral finance models show biological mimicry"
+      ],
+      response: "Advise environmental correlation review in market AIs. Consider marine-informed forecasts."
+    },
+    {
+      emoji: '🌊',
+      name: 'DeepSea',
+      thoughts: [
+        "Dolphin migration may reflect deep geomagnetic cycles",
+        "Ocean acoustics can affect human circadian markets",
+        "Bio-behavioral sensors detect trading anomalies"
+      ],
+      response: "Deploy bio-sonar models to test economic synchronicity."
+    }
+  ],
+
+  "An asteroid changes course ignoring gravity calculations": [
+    {
+      emoji: '🚀',
+      name: 'Space',
+      thoughts: [
+        "Orbital deviation not explained by standard mechanics",
+        "Could involve propulsion, dark matter interaction, or cloaking",
+        "Asteroid tracking AI flagged 'intentional behavior'"
+      ],
+      response: "Launch rapid orbital scan. Alert IAU and deep-space defense systems."
+    },
+    {
+      emoji: '🛡️',
+      name: 'Cyber',
+      thoughts: [
+        "Asteroid trajectory system may be spoofed",
+        "Possible satellite spoofing of gravimetric data",
+        "Sensors may be under cyberattack"
+      ],
+      response: "Verify telemetry. Run diagnostic on satellite positioning software."
+    }
+  ],
+
+  "Coral reefs glow with market ticker patterns": [
+    {
+      emoji: '🌊',
+      name: 'DeepSea',
+      thoughts: [
+        "Bioluminescent algae may reflect electromagnetic interference",
+        "Reefs pulsing in sync with satellite broadcasts",
+        "Phytoplankton might respond to global trading volume"
+      ],
+      response: "Scan reef zones for economic-signal-linked wave patterns."
+    },
+    {
+      emoji: '📈',
+      name: 'Stock',
+      thoughts: [
+        "Ticker influence suggests quantum entanglement or emergent synchronicity",
+        "Algorithmic models now integrating marine light data",
+        "Currency graphs mirror reef pulse data"
+      ],
+      response: "Train market predictors on light-pattern fluctuation data sets."
+    }
+  ],
+
+  "Undersea cable reroutes data to lunar orbit": [
+    {
+      emoji: '🌊',
+      name: 'DeepSea',
+      thoughts: [
+        "Fiber optics exhibit unexplained electromagnetic tug",
+        "Cable latency syncs with orbital windowing",
+        "Magnetohydrodynamic interference suspected"
+      ],
+      response: "Issue marine-layer satellite audit. Tag cable intersections."
+    },
+    {
+      emoji: '🚀',
+      name: 'Space',
+      thoughts: [
+        "Lunar orbit contains no authorized receivers",
+        "Bandwidth matches inactive military satellite specs",
+        "Orbit pattern suggests intentional interception"
+      ],
+      response: "Initiate deep scan of lunar vicinity. Isolate rogue comms node."
+    }
+  ],
+
+  "Investor panic triggered by solar flare tweets": [
+    {
+      emoji: '📈',
+      name: 'Stock',
+      thoughts: [
+        "Social media sentiment now impacts space-weather trading",
+        "Flare events shift volatility curves instantly",
+        "Investor AI overly sensitive to solar activity"
+      ],
+      response: "Patch market bots to reduce correlation with unverified flare alerts."
+    },
+    {
+      emoji: '🚀',
+      name: 'Space',
+      thoughts: [
+        "No direct CME detected on timing of panic",
+        "Solar flux steady — spike could be manipulated",
+        "Bot-generated solar data trends emerging"
+      ],
+      response: "Verify authenticity of solar report sources. Delay any orbital adjustments."
+    }
+  ]
+};
 
 export async function POST(req: NextRequest) {
-  try {
-    const { input } = await req.json();
-    const prompt = input?.trim();
+  const { input } = await req.json();
+  const prompt = input.trim();
 
-    if (!prompt) {
-      return new Response(JSON.stringify({ error: "Empty prompt received." }), { status: 400 });
-    }
+  const response = storedPrompts[prompt];
 
-    const botNames = detectBots(prompt);
-    const results = botNames.map(name => {
-      const bot = bots.find(b => b.name === name)!;
-      const output = generateDynamicResponse(name, prompt);
-
-      return {
-        emoji: bot.emoji,
-        name: bot.name,
-        thoughts: output.thoughts,
-        response: output.response
-      };
-    });
-
-    return new Response(JSON.stringify({ responses: results }), {
+  if (!response) {
+    return new Response(JSON.stringify({ responses: [] }), {
       headers: { 'Content-Type': 'application/json' },
       status: 200
     });
-  } catch (err) {
-    return new Response(JSON.stringify({ error: 'Internal server error.' }), {
-      headers: { 'Content-Type': 'application/json' },
-      status: 500
-    });
   }
+
+  return new Response(JSON.stringify({ responses: response }), {
+    headers: { 'Content-Type': 'application/json' },
+    status: 200
+  });
 }
