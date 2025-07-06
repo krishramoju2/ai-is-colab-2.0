@@ -2,7 +2,8 @@ import { NextRequest } from 'next/server';
 import { getEmbedding } from '@/utils/embed_utils';
 import { vectorStore } from '@/utils/vector_store';
 import { detectEmotion } from '@/utils/emotion_detector';
-import { detectIntent } from '@/utils/intent_classifier';  // ✅ NEW
+import { detectIntent } from '@/utils/intent_classifier';
+import { detectAnomaly } from '@/utils/anomaly_detector';  // ✅ NEW
 
 const storedPrompts: Record<string, any[]> = {
    "A robot declares independence from human authority": [
@@ -202,8 +203,7 @@ const storedPrompts: Record<string, any[]> = {
       ],
       response: "Verify authenticity of solar report sources. Delay any orbital adjustments."
     }
-  ]
-};
+  ]};
 
 async function queryDeepLearning(prompt: string, context: string[]) {
   const botNames = ['Cyber', 'Stock', 'Space', 'DeepSea'];
@@ -245,12 +245,16 @@ export async function POST(req: NextRequest) {
 
   const cached = storedPrompts[prompt];
   if (cached) {
-    const emotion = await detectEmotion(prompt);      // ✅ Also include for static responses
-    const intent = await detectIntent(prompt);        // ✅
-    return new Response(JSON.stringify({ responses: cached, emotion, intent }), {
-      headers: { 'Content-Type': 'application/json' },
-      status: 200
-    });
+    const emotion = await detectEmotion(prompt);
+    const intent = await detectIntent(prompt);
+    const anomaly = await detectAnomaly(prompt);  // ✅
+    return new Response(
+      JSON.stringify({ responses: cached, emotion, intent, anomaly }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+        status: 200
+      }
+    );
   }
 
   const embedding = await getEmbedding(prompt);
@@ -262,10 +266,13 @@ export async function POST(req: NextRequest) {
 
   const emotion = await detectEmotion(prompt);
   const intent = await detectIntent(prompt);
+  const anomaly = await detectAnomaly(prompt);  // ✅
 
-  return new Response(JSON.stringify({ responses, emotion, intent }), {
-    headers: { 'Content-Type': 'application/json' },
-    status: 200
-  });
+  return new Response(
+    JSON.stringify({ responses, emotion, intent, anomaly }),
+    {
+      headers: { 'Content-Type': 'application/json' },
+      status: 200
+    }
+  );
 }
-
