@@ -2,9 +2,10 @@ import { NextRequest } from 'next/server';
 import { getEmbedding } from '@/utils/embed_utils';
 import { vectorStore } from '@/utils/vector_store';
 import { detectEmotion } from '@/utils/emotion_detector';
+import { detectIntent } from '@/utils/intent_classifier';  // ✅ NEW
 
 const storedPrompts: Record<string, any[]> = {
-  "A robot declares independence from human authority": [
+   "A robot declares independence from human authority": [
     {
       emoji: '🛡️',
       name: 'Cyber',
@@ -244,7 +245,9 @@ export async function POST(req: NextRequest) {
 
   const cached = storedPrompts[prompt];
   if (cached) {
-    return new Response(JSON.stringify({ responses: cached, emotion: null }), {
+    const emotion = await detectEmotion(prompt);      // ✅ Also include for static responses
+    const intent = await detectIntent(prompt);        // ✅
+    return new Response(JSON.stringify({ responses: cached, emotion, intent }), {
       headers: { 'Content-Type': 'application/json' },
       status: 200
     });
@@ -258,8 +261,9 @@ export async function POST(req: NextRequest) {
   vectorStore.add(embedding, prompt);
 
   const emotion = await detectEmotion(prompt);
+  const intent = await detectIntent(prompt);
 
-  return new Response(JSON.stringify({ responses, emotion }), {
+  return new Response(JSON.stringify({ responses, emotion, intent }), {
     headers: { 'Content-Type': 'application/json' },
     status: 200
   });
