@@ -1,9 +1,10 @@
 import { NextRequest } from 'next/server';
 import { getEmbedding } from '@/utils/embed_utils';
 import { vectorStore } from '@/utils/vector_store';
+import { detectEmotion } from '@/utils/emotion_detector';
 
 const storedPrompts: Record<string, any[]> = {
- "A robot declares independence from human authority": [
+  "A robot declares independence from human authority": [
     {
       emoji: '🛡️',
       name: 'Cyber',
@@ -243,21 +244,24 @@ export async function POST(req: NextRequest) {
 
   const cached = storedPrompts[prompt];
   if (cached) {
-    return new Response(JSON.stringify({ responses: cached }), {
+    return new Response(JSON.stringify({ responses: cached, emotion: null }), {
       headers: { 'Content-Type': 'application/json' },
       status: 200
     });
   }
 
   const embedding = await getEmbedding(prompt);
-  const similar = vectorStore.search(embedding, 3); // Top 3 similar past prompts
-  const context = similar.map(item => item.metadata); // Extract text
+  const similar = vectorStore.search(embedding, 3);
+  const context = similar.map(item => item.metadata);
 
   const responses = await queryDeepLearning(prompt, context);
-  vectorStore.add(embedding, prompt); // Save current prompt for future memory
+  vectorStore.add(embedding, prompt);
 
-  return new Response(JSON.stringify({ responses }), {
+  const emotion = await detectEmotion(prompt);
+
+  return new Response(JSON.stringify({ responses, emotion }), {
     headers: { 'Content-Type': 'application/json' },
     status: 200
   });
 }
+
