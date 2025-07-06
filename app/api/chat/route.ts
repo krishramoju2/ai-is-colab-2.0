@@ -1,5 +1,3 @@
-// app/api/chat/route.ts — HARDCODED PROMPT VERSION (10 PROMPTS, OFFLINE TESTABLE)
-
 import { NextRequest } from 'next/server';
 
 const storedPrompts: Record<string, any[]> = {
@@ -25,7 +23,6 @@ const storedPrompts: Record<string, any[]> = {
       response: "Advise market freeze on robotics sector until AI governance laws are defined."
     }
   ],
-
   "A satellite appears to be sending Fibonacci pulses": [
     {
       emoji: '🚀',
@@ -48,7 +45,6 @@ const storedPrompts: Record<string, any[]> = {
       response: "Isolate satellite from network. Initiate firmware rollback and key audit."
     }
   ],
-
   "A deep sonar ping resonates with ancient temple rhythm": [
     {
       emoji: '🌊',
@@ -71,7 +67,6 @@ const storedPrompts: Record<string, any[]> = {
       response: "Simulate lunar interference on sonar. Consult orbital seismology team."
     }
   ],
-
   "Bank passwords match stellar constellations": [
     {
       emoji: '📈',
@@ -94,7 +89,6 @@ const storedPrompts: Record<string, any[]> = {
       response: "Investigate astrophysics databases for tampering. Flag constellation overlays."
     }
   ],
-
   "Stock trends match dolphin migration patterns": [
     {
       emoji: '📈',
@@ -117,7 +111,6 @@ const storedPrompts: Record<string, any[]> = {
       response: "Deploy bio-sonar models to test economic synchronicity."
     }
   ],
-
   "An asteroid changes course ignoring gravity calculations": [
     {
       emoji: '🚀',
@@ -140,7 +133,6 @@ const storedPrompts: Record<string, any[]> = {
       response: "Verify telemetry. Run diagnostic on satellite positioning software."
     }
   ],
-
   "Coral reefs glow with market ticker patterns": [
     {
       emoji: '🌊',
@@ -163,7 +155,6 @@ const storedPrompts: Record<string, any[]> = {
       response: "Train market predictors on light-pattern fluctuation data sets."
     }
   ],
-
   "Undersea cable reroutes data to lunar orbit": [
     {
       emoji: '🌊',
@@ -186,7 +177,6 @@ const storedPrompts: Record<string, any[]> = {
       response: "Initiate deep scan of lunar vicinity. Isolate rogue comms node."
     }
   ],
-
   "Investor panic triggered by solar flare tweets": [
     {
       emoji: '📈',
@@ -211,20 +201,55 @@ const storedPrompts: Record<string, any[]> = {
   ]
 };
 
+async function queryDeepLearning(prompt: string) {
+  const botNames = ['Cyber', 'Stock', 'Space', 'DeepSea'];
+  const responses = [];
+
+  for (const name of botNames) {
+    const res = await fetch('http://localhost:8000/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        bot: name,
+        prompt: prompt
+      })
+    });
+
+    if (!res.ok) continue;
+
+    const data = await res.json();
+    responses.push({
+      emoji: {
+        Cyber: '🛡️',
+        Stock: '📈',
+        Space: '🚀',
+        DeepSea: '🌊'
+      }[name],
+      name: name,
+      thoughts: data.thoughts,
+      response: data.response
+    });
+  }
+
+  return responses;
+}
+
 export async function POST(req: NextRequest) {
   const { input } = await req.json();
   const prompt = input.trim();
 
   const response = storedPrompts[prompt];
 
-  if (!response) {
-    return new Response(JSON.stringify({ responses: [] }), {
+  if (response) {
+    return new Response(JSON.stringify({ responses: response }), {
       headers: { 'Content-Type': 'application/json' },
       status: 200
     });
   }
 
-  return new Response(JSON.stringify({ responses: response }), {
+  const fallback = await queryDeepLearning(prompt);
+
+  return new Response(JSON.stringify({ responses: fallback }), {
     headers: { 'Content-Type': 'application/json' },
     status: 200
   });
