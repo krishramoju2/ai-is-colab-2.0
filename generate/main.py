@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import torch
 
 from intent_classifier import detect_intent  # ✅ NEW
+from anomaly_detector import detect_anomaly  # ✅ NEW
 
 app = FastAPI()
 
@@ -39,6 +40,9 @@ async def generate(req: PromptRequest):
     # Intent detection
     intent = detect_intent(req.prompt)
 
+    # Anomaly detection
+    is_anomalous = detect_anomaly(req.prompt)
+
     # Generation input
     full_prompt = f"[Bot: {req.bot}]\nContext:\n{req.context}\n\nPrompt:\n{req.prompt}\n\n-"
     output = generator(full_prompt, max_length=400, do_sample=True, temperature=0.75)[0]['generated_text']
@@ -58,5 +62,6 @@ async def generate(req: PromptRequest):
         "thoughts": thoughts[:3],
         "response": response,
         "emotion": top_emotion,
-        "intent": intent  # ✅ NEW
+        "intent": intent,
+        "anomaly": is_anomalous  # ✅ NEW
     }
