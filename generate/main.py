@@ -4,6 +4,8 @@ from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer
 from fastapi.middleware.cors import CORSMiddleware
 import torch
 
+from intent_classifier import detect_intent  # ✅ NEW
+
 app = FastAPI()
 
 app.add_middleware(
@@ -14,7 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load main text generation model
+# Load text generation model
 MODEL_NAME = "tiiuae/falcon-rw-1b"
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
@@ -30,11 +32,14 @@ class PromptRequest(BaseModel):
 
 @app.post("/generate")
 async def generate(req: PromptRequest):
-    # Detect emotion
+    # Emotion detection
     emotion_scores = emotion_classifier(req.prompt)[0]
     top_emotion = max(emotion_scores, key=lambda x: x['score'])['label']
 
-    # Format input for generation
+    # Intent detection
+    intent = detect_intent(req.prompt)
+
+    # Generation input
     full_prompt = f"[Bot: {req.bot}]\nContext:\n{req.context}\n\nPrompt:\n{req.prompt}\n\n-"
     output = generator(full_prompt, max_length=400, do_sample=True, temperature=0.75)[0]['generated_text']
 
@@ -52,5 +57,6 @@ async def generate(req: PromptRequest):
     return {
         "thoughts": thoughts[:3],
         "response": response,
-        "emotion": top_emotion
+        "emotion": top_emotion,
+        "intent": intent  # ✅ NEW
     }
