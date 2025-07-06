@@ -1,7 +1,9 @@
 import { NextRequest } from 'next/server';
+import { getEmbedding } from '@/utils/embed_utils';
+import { vectorStore } from '@/utils/vector_store';
 
 const storedPrompts: Record<string, any[]> = {
-  "A robot declares independence from human authority": [
+ "A robot declares independence from human authority": [
     {
       emoji: '🛡️',
       name: 'Cyber',
@@ -201,7 +203,7 @@ const storedPrompts: Record<string, any[]> = {
   ]
 };
 
-async function queryDeepLearning(prompt: string) {
+async function queryDeepLearning(prompt: string, context: string[]) {
   const botNames = ['Cyber', 'Stock', 'Space', 'DeepSea'];
   const responses = [];
 
@@ -211,7 +213,8 @@ async function queryDeepLearning(prompt: string) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         bot: name,
-        prompt: prompt
+        prompt,
+        context: context.join('\n')
       })
     });
 
@@ -225,7 +228,7 @@ async function queryDeepLearning(prompt: string) {
         Space: '🚀',
         DeepSea: '🌊'
       }[name],
-      name: name,
+      name,
       thoughts: data.thoughts,
       response: data.response
     });
@@ -238,18 +241,22 @@ export async function POST(req: NextRequest) {
   const { input } = await req.json();
   const prompt = input.trim();
 
-  const response = storedPrompts[prompt];
-
-  if (response) {
-    return new Response(JSON.stringify({ responses: response }), {
+  const cached = storedPrompts[prompt];
+  if (cached) {
+    return new Response(JSON.stringify({ responses: cached }), {
       headers: { 'Content-Type': 'application/json' },
       status: 200
     });
   }
 
-  const fallback = await queryDeepLearning(prompt);
+  const embedding = await getEmbedding(prompt);
+  const similar = vectorStore.search(embedding, 3); // Top 3 similar past prompts
+  const context = similar.map(item => item.metadata); // Extract text
 
-  return new Response(JSON.stringify({ responses: fallback }), {
+  const responses = await queryDeepLearning(prompt, context);
+  vectorStore.add(embedding, prompt); // Save current prompt for future memory
+
+  return new Response(JSON.stringify({ responses }), {
     headers: { 'Content-Type': 'application/json' },
     status: 200
   });
