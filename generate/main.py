@@ -14,10 +14,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Load main text generation model
 MODEL_NAME = "tiiuae/falcon-rw-1b"
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
 generator = pipeline("text-generation", model=model, tokenizer=tokenizer, device=0 if torch.cuda.is_available() else -1)
+
+# Load emotion detection model
+emotion_classifier = pipeline("text-classification", model="j-hartmann/emotion-english-distilroberta-base", return_all_scores=True)
 
 class PromptRequest(BaseModel):
     bot: str
@@ -26,8 +30,12 @@ class PromptRequest(BaseModel):
 
 @app.post("/generate")
 async def generate(req: PromptRequest):
-    full_prompt = f"[Bot: {req.bot}]\nContext:\n{req.context}\n\nPrompt:\n{req.prompt}\n\n-"
+    # Detect emotion
+    emotion_scores = emotion_classifier(req.prompt)[0]
+    top_emotion = max(emotion_scores, key=lambda x: x['score'])['label']
 
+    # Format input for generation
+    full_prompt = f"[Bot: {req.bot}]\nContext:\n{req.context}\n\nPrompt:\n{req.prompt}\n\n-"
     output = generator(full_prompt, max_length=400, do_sample=True, temperature=0.75)[0]['generated_text']
 
     thoughts, response = [], ""
@@ -41,5 +49,8 @@ async def generate(req: PromptRequest):
         thoughts = ["Could not parse thought 1", "Could not parse thought 2", "Could not parse thought 3"]
         response = "Fallback response. Model failed to format correctly."
 
-    return { "thoughts": thoughts[:3], "response": response }
-
+    return {
+        "thoughts": thoughts[:3],
+        "response": response,
+        "emotion": top_emotion
+    }
